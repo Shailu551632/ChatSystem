@@ -1,3 +1,7 @@
+const mongoose = require('mongoose');
+const conn = require('./config/conDB')
+const Msg = require('./models/msgSch');
+
 const io = require('socket.io')(8000,{
     cors: {
         origin: '*',
@@ -13,6 +17,15 @@ io.on('connection', socket => {
         users[socket.id] = name;
         socket.broadcast.emit('user-joined', name);
     });
+
+    socket.on('send', message => {
+        const chatMessage = new Msg({msg: message});
+        chatMessage.save().then(() => {
+            console.log('Saved');
+        }).catch((err) => {
+            console.log(err);
+        })
+    })
 
     socket.on('send', message => {
         socket.broadcast.emit('receive', {message: message, name: users[socket.id]})
